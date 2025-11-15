@@ -39,57 +39,30 @@ Server default: http://localhost:3000
 - `npm start` — run compiled build
 - `npm test` — run Jest tests + coverage
 - `npm run test:watch` — Jest in watch mode
-- `npm run lint` — run ESLint
-- `npm run format` — run Prettier
 
-## Environment & Prisma
+# Candidex — Question Management API
 
-- The app uses Prisma + PostgreSQL. Set `DATABASE_URL` in `.env` (percent-encode special characters in password).
-- After setting `.env` run (once) to generate client and create schema:
+Deployed: https://candidex.onrender.com
 
-```powershell
-npx prisma generate
-npx prisma migrate dev --name init
-```
+Lightweight REST API to create, read, update and delete question types (MCQ, Programming, Descriptive, Image-based). This README focuses on the deployed API usage and examples.
 
-## Environment & Prisma
+Base URL (deployed): https://candidex.onrender.com/api/v1
 
-- The app uses Prisma + PostgreSQL. Set `DATABASE_URL` in `.env` (percent-encode special characters in the password).
-- After setting `.env` run (once) to generate client and create schema:
+Health and docs
 
-```powershell
-npx prisma generate
-npx prisma migrate dev --name init
-```
+- Health: GET https://candidex.onrender.com/health
+- Swagger UI (interactive docs): https://candidex.onrender.com/api-docs
 
-If Prisma engine download fails due to network/proxy, unset proxy env vars or run from a network without that proxy.
+All requests must use the Content-Type: application/json header when sending a body.
 
-## API Overview
+## Endpoints — full reference (with example request bodies)
 
-Base URL: `/api/v1`
+1. Create question
 
-Endpoints (core):
-
-- POST /api/v1/questions — create a question
-- GET /api/v1/questions — list questions (pagination + filters)
-- GET /api/v1/questions/:id — get single question
-- PUT /api/v1/questions/:id — update question
-- DELETE /api/v1/questions/:id — delete question
-- GET /api/v1/questions/category/:category — questions by category
-- GET /api/v1/questions/type/:type — questions by type
-
-Query params for listing (`GET /api/v1/questions`): `page`, `limit`, `type`, `category`, `difficulty`, `visibility`, `tags` (comma-separated), `sortBy`, `sortOrder`.
-
-Request body notes:
-
-- `type` must be one of the defined QuestionType enums (MCQ, PROGRAMMING, DESCRIPTIVE, IMAGE_BASED).
-- `content` is a JSON object whose structure depends on the `type` (validated server-side).
-
-Swagger UI (runtime): `/api-docs` — opens interactive API docs.
-
-## Example (minimal create MCQ)
-
-POST /api/v1/questions
+- Method: POST
+- Route: /api/v1/questions
+- Description: Create a new question. The `type` field controls shape of `content`.
+- Example body (MCQ):
 
 ```json
 {
@@ -110,136 +83,148 @@ POST /api/v1/questions
 }
 ```
 
-## Tests
+- Example body (Programming):
 
-- Run the full test suite and view coverage:
-
-```powershell
-npm test
+```json
+{
+  "title": "Reverse a string",
+  "type": "PROGRAMMING",
+  "category": "Algorithms",
+  "difficulty": "MEDIUM",
+  "visibility": "PRIVATE",
+  "tags": ["string", "algorithm"],
+  "points": 30,
+  "content": {
+    "description": "Write a function that reverses a string",
+    "template": "function reverse(s) { /* ... */ }",
+    "tests": ["hello => olleh"]
+  }
+}
 ```
 
-The repository has a test in `src/tests/question.test.ts` that exercises the main endpoints.
+- Response: 201 Created with the created question object (includes `id`, timestamps).
 
-## Postman / Newman
+Example curl:
 
-- A Postman collection is included at `postman_collection.json`.
-- To run it automatically with Newman (server must be running):
-
-```powershell
-npx newman run postman_collection.json --env-var "baseUrl=http://localhost:3000"
+```bash
+curl -X POST "https://candidex.onrender.com/api/v1/questions" \
+  -H "Content-Type: application/json" \
+  -d '@create_mcq.json'
 ```
 
-## Project layout (key files)
+2. List questions (with pagination & filters)
 
-- `src/app.ts` — express app, middleware and swagger setup
-- `src/server.ts` — server entry
-- `src/routes/question.routes.ts` — route definitions
-- `src/controllers/question.controller.ts` — request handling
-- `src/services/question.service.ts` — business logic (Prisma-backed)
-- `src/validators/question.validator.ts` — express-validator chains
-- `src/prismaClient.ts` — Prisma client singleton
-- `src/tests/question.test.ts` — integration tests
+- Method: GET
+- Route: /api/v1/questions
+- Query params:
+  - page (default 1)
+  - limit (default 10)
+  - type (MCQ|PROGRAMMING|DESCRIPTIVE|IMAGE_BASED)
+  - category
+  - difficulty (EASY|MEDIUM|HARD)
+  - visibility (PUBLIC|PRIVATE)
+  - tags (comma-separated)
+  - sortBy (e.g., createdAt, title)
+  - sortOrder (asc|desc)
+
+- Response: 200 OK with { items: [...], total, page, limit }
+
+Example curl:
+
+```bash
+curl "https://candidex.onrender.com/api/v1/questions?page=1&limit=10"
+```
+
+3. Get single question
+
+- Method: GET
+- Route: /api/v1/questions/:id
+- Response: 200 OK with the question object or 404 if not found.
+
+Example curl:
+
+```bash
+curl "https://candidex.onrender.com/api/v1/questions/REPLACE_WITH_ID"
+```
+
+4. Update question
+
+- Method: PUT
+- Route: /api/v1/questions/:id
+- Body: Partial or full question object (only fields provided will be updated). Example to update the title:
+
+```json
+{ "title": "Updated title" }
+```
+
+- Response: 200 OK with updated question object.
+
+Example curl:
+
+```bash
+curl -X PUT "https://candidex.onrender.com/api/v1/questions/REPLACE_WITH_ID" \
+  -H "Content-Type: application/json" \
+  -d '{"title":"New Title"}'
+```
+
+5. Delete question
+
+- Method: DELETE
+- Route: /api/v1/questions/:id
+- Response: 204 No Content on success or 404 if not found.
+
+Example curl:
+
+```bash
+curl -X DELETE "https://candidex.onrender.com/api/v1/questions/REPLACE_WITH_ID"
+```
+
+6. List by category
+
+- Method: GET
+- Route: /api/v1/questions/category/:category
+- Response: 200 OK with array of questions in that category.
+
+Example curl:
+
+```bash
+curl "https://candidex.onrender.com/api/v1/questions/category/Math"
+```
+
+7. List by type
+
+- Method: GET
+- Route: /api/v1/questions/type/:type
+- Response: 200 OK with array of questions of that type.
+
+Example curl:
+
+```bash
+curl "https://candidex.onrender.com/api/v1/questions/type/MCQ"
+```
 
 ## Notes & troubleshooting
 
-- If you change the Prisma schema, run `npx prisma generate` again.
-- If your DB password contains `@` or other special chars, percent-encode them in `DATABASE_URL` (e.g. `@` -> `%40`).
-- Prisma engine download can fail behind a corporate proxy; ensure `HTTPS_PROXY`/`https_proxy` is valid or unset.
+- All request/response examples assume the deployed base URL: https://candidex.onrender.com
+- Use `Content-Type: application/json` for requests with bodies.
+- If a request fails with 500, check the server logs on Render for detailed error messages.
+- The Swagger UI at /api-docs lists the same endpoints and shows live request bodies you can try from the browser.
+
+## License
+
+This project is licensed under the MIT License. Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including
+the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit
+persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the
+Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ---
 
-### Deployment to Render — quick checklist
-
-1. Push repository to GitHub (include `prisma/migrations`).
-2. Create a Web Service on Render and connect the GitHub repo (or import `render.yaml`).
-3. Add Render environment variables: `DATABASE_URL` (Supabase direct or pooler URL), `NODE_ENV=production`.
-4. Confirm Build command: `npm run build && npx prisma generate && npx prisma migrate deploy`.
-5. Confirm Start command: `npm start`.
-
-When the service is live, update the top of this README with the public URL.
-
-## Deploy notes — Render environment variables
-
-- Recommended env vars to set in Render (Web Service > Environment):
-  - `DATABASE_URL` — runtime DB connection. For Supabase pooler (PgBouncer) use the pooler URL and add `?pgbouncer=true&sslmode=require`.
-  - `DIRECT_DATABASE_URL` — direct Postgres URL (no PgBouncer) used only for running migrations during build.
-  - `NODE_ENV=production`
-
-- Example Render Build command (forces migrations to run against the direct DB URL):
-
-  sh -lc 'export DATABASE_URL="$DIRECT_DATABASE_URL" && npm run build && npx prisma generate && npx prisma migrate deploy'
-
-- Start command (Render service):
-
-  npm start
-
-Notes:
-
-- We recommend keeping a direct DB connection for migrations (no PgBouncer) and using the pooler URL for runtime. The build command above temporarily sets `DATABASE_URL` to the direct URL during the build/migration step so Prisma migrations run safely.
-
-## Try it — basic curl examples (replace <PUBLIC_URL> with your deployed URL)
-
-Create a question (MCQ)
-
-```bash
-curl -X POST "https://<PUBLIC_URL>/api/v1/questions" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "title": "What is 2 + 2?",
-    "type": "MCQ",
-    "category": "Math",
-    "difficulty": "EASY",
-    "visibility": "PUBLIC",
-    "tags": ["arithmetic"],
-    "points": 10,
-    "content": {
-      "questionContent": "What is the result of 2 + 2?",
-      "options": [
-        { "id": "a", "text": "3", "isCorrect": false },
-        { "id": "b", "text": "4", "isCorrect": true }
-      ]
-    }
-  }'
-```
-
-List questions (first page)
-
-```bash
-curl "https://<PUBLIC_URL>/api/v1/questions?page=1&limit=10"
-```
-
-Get question by id
-
-```bash
-curl "https://<PUBLIC_URL>/api/v1/questions/<QUESTION_ID>"
-```
-
-Update a question
-
-```bash
-curl -X PUT "https://<PUBLIC_URL>/api/v1/questions/<QUESTION_ID>" \
-  -H "Content-Type: application/json" \
-  -d '{ "title": "Updated title" }'
-```
-
-Delete a question
-
-```bash
-curl -X DELETE "https://<PUBLIC_URL>/api/v1/questions/<QUESTION_ID>"
-```
-
-## Postman / Newman (production)
-
-- Update the Postman environment `baseUrl` to `https://<PUBLIC_URL>` and export or run with Newman:
-
-```powershell
-npx newman run postman_collection.json --env-var "baseUrl=https://<PUBLIC_URL>"
-```
-
----
-
-If you'd like, I can:
-
-- Prepare a ready-to-push GitHub repo (create a commit and remote) if you want me to create the GitHub side.
-- Walk through the Render UI steps with exact screenshots and values to set.
-- Add a small in-memory fallback mode so you can run the app locally without a database while you finalize deployment credentials.
+© 2025 toshakparmar — https://github.com/toshakparmar/Candidex
