@@ -1,0 +1,45 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum QuestionType {
+  MCQ
+  PROGRAMMING
+  DESCRIPTIVE
+  IMAGE_BASED
+}
+
+enum DifficultyLevel {
+  EASY
+  MEDIUM
+  HARD
+}
+
+enum VisibilityType {
+  PUBLIC
+  PRIVATE
+}
+
+model Question {
+  id           String         @id @default(uuid())
+  title        String
+  type         QuestionType
+  category     String
+  difficulty   DifficultyLevel
+  visibility   VisibilityType
+  tags         String[]
+  points       Int
+  estimatedTime Int
+  negativeMarks Int?           @default(0)
+  explanation  String?
+  authorNotes  String?
+  content      Json
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+}
