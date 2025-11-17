@@ -155,6 +155,28 @@ const options: swaggerJsdoc.Options = {
               ]
             }
           }
+          ,
+          example: {
+            title: 'Basic Algebra Question',
+            type: 'MCQ',
+            category: 'Mathematics',
+            difficulty: 'EASY',
+            visibility: 'PUBLIC',
+            tags: ['algebra', 'basic'],
+            points: 10,
+            estimatedTime: 5,
+            explanation: 'string',
+            authorNotes: 'string',
+            content: {
+              questionContent: 'What is 2+2?',
+              options: [
+                { id: 'opt_1', text: '2', isCorrect: false },
+                { id: 'opt_2', text: '3', isCorrect: false },
+                { id: 'opt_3', text: '4', isCorrect: true },
+                { id: 'opt_4', text: '5', isCorrect: false }
+              ]
+            }
+          }
         },
         UpdateQuestionRequest: {
           type: 'object',
