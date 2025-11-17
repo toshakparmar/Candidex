@@ -14,19 +14,31 @@ export class QuestionController {
      *   post:
      *     summary: Create a new question
      *     tags: [Questions]
-     *     requestBody:
-     *       required: true
-     *       content:
-     *         application/json:
-     *           schema:
-     *             $ref: '#/components/schemas/CreateQuestionRequest'
-     *     responses:
-     *       201:
-     *         description: Question created successfully
-     *       400:
-     *         description: Invalid request data
-     *       500:
-     *         description: Internal server error
+    *     requestBody:
+    *       required: true
+    *       content:
+    *         application/json:
+    *           schema:
+    *             $ref: '#/components/schemas/CreateQuestionRequest'
+    *     responses:
+    *       201:
+    *         description: Question created successfully
+    *         content:
+    *           application/json:
+    *             schema:
+    *               type: object
+    *       400:
+    *         description: Invalid request data
+    *         content:
+    *           application/json:
+    *             schema:
+    *               $ref: '#/components/schemas/Error'
+    *       500:
+    *         description: Internal server error
+    *         content:
+    *           application/json:
+    *             schema:
+    *               $ref: '#/components/schemas/Error'
      */
     async createQuestion(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
@@ -62,11 +74,19 @@ export class QuestionController {
      *         schema:
      *           type: string
      *           format: uuid
-     *     responses:
-     *       200:
-     *         description: Question fetched successfully
-     *       404:
-     *         description: Question not found
+    *     responses:
+    *       200:
+    *         description: Question fetched successfully
+    *         content:
+    *           application/json:
+    *             schema:
+    *               type: object
+    *       404:
+    *         description: Question not found
+    *         content:
+    *           application/json:
+    *             schema:
+    *               $ref: '#/components/schemas/Error'
      */
     async getQuestionById(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
@@ -144,9 +164,13 @@ export class QuestionController {
      *           type: string
      *           enum: [asc, desc]
      *           default: desc
-     *     responses:
-     *       200:
-     *         description: Questions fetched successfully
+    *     responses:
+    *       200:
+    *         description: Questions fetched successfully
+    *         content:
+    *           application/json:
+    *             schema:
+    *               type: object
      */
     async getAllQuestions(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
@@ -194,11 +218,19 @@ export class QuestionController {
      *         application/json:
      *           schema:
      *             $ref: '#/components/schemas/UpdateQuestionRequest'
-     *     responses:
-     *       200:
-     *         description: Question updated successfully
-     *       404:
-     *         description: Question not found
+    *     responses:
+    *       200:
+    *         description: Question updated successfully
+    *         content:
+    *           application/json:
+    *             schema:
+    *               type: object
+    *       404:
+    *         description: Question not found
+    *         content:
+    *           application/json:
+    *             schema:
+    *               $ref: '#/components/schemas/Error'
      */
     async updateQuestion(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
@@ -235,11 +267,19 @@ export class QuestionController {
      *         schema:
      *           type: string
      *           format: uuid
-     *     responses:
-     *       200:
-     *         description: Question deleted successfully
-     *       404:
-     *         description: Question not found
+    *     responses:
+    *       200:
+    *         description: Question deleted successfully
+    *         content:
+    *           application/json:
+    *             schema:
+    *               type: object
+    *       404:
+    *         description: Question not found
+    *         content:
+    *           application/json:
+    *             schema:
+    *               $ref: '#/components/schemas/Error'
      */
     async deleteQuestion(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
@@ -272,9 +312,13 @@ export class QuestionController {
      *         required: true
      *         schema:
      *           type: string
-     *     responses:
-     *       200:
-     *         description: Questions fetched successfully
+    *     responses:
+    *       200:
+    *         description: Questions fetched successfully
+    *         content:
+    *           application/json:
+    *             schema:
+    *               type: object
      */
     async getQuestionsByCategory(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
@@ -304,9 +348,13 @@ export class QuestionController {
      *         schema:
      *           type: string
      *           enum: [MCQ, PROGRAMMING, DESCRIPTIVE, IMAGE_BASED]
-     *     responses:
-     *       200:
-     *         description: Questions fetched successfully
+    *     responses:
+    *       200:
+    *         description: Questions fetched successfully
+    *         content:
+    *           application/json:
+    *             schema:
+    *               type: object
      */
     async getQuestionsByType(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {

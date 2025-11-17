@@ -18,12 +18,8 @@ const options: swaggerJsdoc.Options = {
     },
     servers: [
       {
-        url: 'http://localhost:3000',
-        description: 'Development server'
-      },
-      {
-        url: 'https://api.example.com',
-        description: 'Production server'
+        url: 'https://candidex.onrender.com',
+        description: 'Deployed API (Render) - use this to try endpoints'
       }
     ],
     components: {
